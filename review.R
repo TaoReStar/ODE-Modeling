@@ -6,6 +6,7 @@ library(gplots)
 library(scales)
 library(annotables)
 
+
 grch <- as.matrix(grch37)
 ### load marker genes
 markers <- read.csv("~/review_paper/pH_homeostasis_responders.csv")
@@ -20,22 +21,38 @@ urea.id <- getids(urea)
 ployA.id <- getids(polyA)
 urea.fig <- Figure.draw(urea.id)
 ployA.fig <- Figure.draw(ployA.id)
-setwd("~/review_paper/")
+setwd("~/Downloads/projects/2018Spring/Review_Article/data/files/Heatmaps")
 pdf("./polyA_enzyme.pdf", height=7, width=10, onefile=T)
 multi.fig(ployA.fig)
 graphics.off()
 ### correlation
 cancers <- names(stages.data)
-cancersN <- paste("~/GDC/GDC/R_data_space/TCGA-", cancers, "_FPKM_N.RData", sep="")
-cancersT <- paste("~/GDC/GDC/R_data_space/TCGA-", cancers, "_FPKM_T.RData", sep="")
+cancers <- names(All.DE)
+cancersN <- paste("~/Downloads/projects/GDC/R_data_space/", cancers, "_FPKM_N.RData", sep="")
+cancersT <- paste("~/Downloads/projects/GDC/R_data_space/", cancers, "_FPKM_T.RData", sep="")
 
-pdf("./correlation_heatmap.pdf", height=7, width=10, onefile=T)
+
+setwd("~/Downloads/projects/2018Spring/Review_Article/data/files/Heatmaps")
+bcaa <- c("SLC16A1", "SLC16A2", "SLC16A4", "SLC16A5", "SLC16A6", "SLC16A7",
+"BCAT1", "SLC7A5", "SLC7A6", "SLC7A7", "SLC7A8", "SLC43A1", "SLC43A2",
+"SLC43A3", "BCAT2", "BCKDHA", "BCKDHB", "DBT")
+bcaa.id <- getids(bcaa)
+glutamine <- c("SLC1A5", "SLC6A14", "SLC6A19", "SLC7A5", "SLC7A6", "SLC7A7", "SLC7A8", "SLC7A9",
+"SLC38A1", "SLC38A2", "SLC38A3", "SLC38A5", "SLC38A7", "SLC38A8", "GLS", "GLS2","GLUD1",
+"GLUD2", "GPT", "GOT1", "GOT2", "OGDH", "DLD", "DLST", "SUCLG1", "SUCLG2", "SUCLA2",
+"SDHA", "SDHB", "SDHC", "SDHD", "FH", "MDH1", "MDH2", "CS", "ME1", "ME2", "ME3", "ACLY",
+"FASN")
+glutamine.id <- getids(glutamine)
+serine <- c("PHGDH", "PSAT1", "PSPH")
+serine.id <- getids(serine)
+
+pdf("./arginine_correlation_heatmap.pdf", height=7, width=10, onefile=T)
 par(cex.main=0.9)
 for(i in 1:length(cancersT))
 {
 	print(i)
 	load(cancersT[i])
-	data.m <- cor_analysis(urea.id, ployA.id, data_t)
+	data.m <- cor_analysis(all.id, all.id, data_t)
 	heatmap.2(data.m, dendrogram="none", col=bluered(128), Rowv=F, Colv=F, 
 		breaks=seq(-0.8, 0.8, length.out=129), 
 		scale="none",density.info="none", trace="none", cexCol=0.9, cexRow=0.9, 
@@ -255,27 +272,6 @@ pdf("./Fatty_acids_aborption_gene_changes.pdf", height=8, width=11, onefile=T)
 multi.fig(fatty.absorb.fig)
 graphics.off()
 
-### define func to draw multiple figures
-multi.fig <- function(p)
-{
-	for(i in 1:length(p))
-	{
-		pp <- p[[i]]
-		print(i)
-		for(j in 0:2)
-		{
-			print(j)
-			if(j < 2)
-			{
-				print(plot_grid(pp[[1+(j*9)]], pp[[2+(j*9)]], pp[[3+(j*9)]], pp[[4+(j*9)]], pp[[5+(j*9)]], 
-					pp[[6+(j*9)]], pp[[7+(j*9)]], pp[[8+(j*9)]], pp[[9+(j*9)]], ncol=3))
-			}
-			else
-			{print(plot_grid(pp[[19]], pp[[20]], ncol=3, nrow=3))}
-		}
-	}
-}
-
 
 ###TN information
 	tn.st1 <- intersect(tn.coln, st1.index)
@@ -297,14 +293,66 @@ multi.fig <- function(p)
 
 
 ### Cytoscape
+setwd("~/Downloads/projects/2018Spring/Review_Article/data/files/fig1/")
+fig <- read.delim("~/Downloads/projects/2018Spring/Review_Article/data/Fig1.txt", header=F)
+fig <- as.matrix(fig)
+fig <- fig[,c(1:3)]
+for(i in 1:length(All.DE))
+{
+	write.table(fig, file=paste(names(All.DE)[i], "_fig1.txt", sep=""), sep="\t", 
+		row.names=F, col.names=F, quote=F)
+}
+
 library("RCy3")
-PRMT <- c("PRMT1", "PRMT2", "PRMT3", "PRMT5", "PRMT6", "PRMT7", "PRMT8", "PRMT9")
-DDAH <- c("DDAH1", "DDAH2")
-ASS <- c("ASS1", "ASL", "AZIN2", "SRM", "SMS", "RAI1")
+load()
+PRMT <- c("SLC22A2", "PRMT1", "PRMT2", "PRMT3", "PRMT5", "PRMT6", "PRMT7", "PRMT8", "PRMT9")
+DDAH <- c("DDAH1", "DDAH2", "PYCR1")
+ASS <- c("ASS1", "ASL", "AZIN2", "SRM", "SMS", "RAI1", "SRMS")
 chain <- c("ALDH18A1", "OAT", "ODC1", "SLC7A1", "SAT1", "SLC26A1", "SMO", "SMOX", 
 	"SLC3A2")
 
-getids
+all <- c(PRMT, DDAH, ASS, chain)
+all.id <- getids(all)
+
+setwd("~/Downloads/projects/2018Spring/Review_Article/data/data_cancers/")
+#cancers <- paste("TCGA-", names(stages.data), sep="")
+for(i in 1:length(All.DE))
+{
+	data <- All.DE[[i]]
+	data <- data[all.id[,1], ]
+	colors <- rep("black", nrow(data))
+	colors[data[,1]<=0.05 & data[,2]>1] <- "red"
+	colors[data[,1]<=0.05 & data[,2]<1] <- "blue"
+	data <- cbind(rownames(all.id), data, colors)
+	colnames(data)[1] <- "genes" 
+	write.table(data, file=paste("All_", names(All.DE)[i], ".txt", sep=""), quote=F,
+		row.names=F, col.names=T, sep="\t")
+}
+
+Cytoscape
+1. import network fig1
+2. import file edge
+3. stlye -- sample1
+4. line type dash
+5. Label colors
+6. Stroke Color ()
+
+
+### Linux change
+cat All_TCGA-BLCA.txt|cut -f4|sed 's/0/black/g; s/-1/blue/g; s/1/red/g; s/s/s_n/g' |
+paste -d "\t" All_TCGA-BLCA.txt - > ./All_TCGA-BLCA.txt
+
+for f in *.txt; do
+	cat $f |cut -f4|sed 's/0/black/g; s/-1/blue/g; s/1/red/g; s/s/s_n/g' | 
+	paste -d "\t" $f - > $(echo new_$f)
+done
+
+for f in *.txt; do
+	echo new_$f
+done
+
+for i in *.doc ; do mv "$i" $(echo $i | sed s/doc/txt/) ; done
+
 
 
 
